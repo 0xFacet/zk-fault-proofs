@@ -259,7 +259,7 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
               <input
                 id="amount"
                 type="number"
-                step="0.001"
+                step="any"
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}

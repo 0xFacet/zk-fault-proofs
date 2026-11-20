@@ -123,7 +123,7 @@ export function DepositWizard() {
         <div className="p-4 bg-inset rounded-lg">
           <p className="text-sm font-medium text-dim">L1 Balance</p>
           <p className="text-lg font-semibold text-ink">
-            {l1Balance ? formatEther(l1Balance.value) : '0'} ETH
+            {l1Balance ? formatEther(l1Balance.value) : '…'} ETH
           </p>
         </div>
         <div className="p-4 bg-accent-soft rounded-lg">
@@ -159,7 +159,7 @@ export function DepositWizard() {
             <input
               id="amount"
               type="number"
-              step="0.001"
+              step="any"
               min="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
