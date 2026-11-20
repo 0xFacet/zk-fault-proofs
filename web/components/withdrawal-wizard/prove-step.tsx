@@ -119,12 +119,12 @@ export function ProveStep({ withdrawalData, proposalId, onProven }: ProveStepPro
       <h3 className="text-lg font-semibold mb-4">Step 3: Prove Withdrawal</h3>
       
       {!isOnL1 && (
-        <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-          <p className="text-sm text-orange-800">
+        <div className="mb-4 p-4 bg-warn-soft border border-warn-line rounded-lg">
+          <p className="text-sm text-warn">
             You need to be on L1 to prove the withdrawal. 
             <button
               onClick={() => switchChain({ chainId: config.l1ChainId })}
-              className="ml-2 text-orange-600 underline hover:text-orange-700"
+              className="ml-2 text-warn underline hover:text-ink"
             >
               Switch to L1
             </button>
@@ -133,49 +133,49 @@ export function ProveStep({ withdrawalData, proposalId, onProven }: ProveStepPro
       )}
 
       <div className="space-y-4">
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800 mb-1">
+        <div className="p-4 bg-ok-soft border border-ok-line rounded-lg">
+          <p className="text-sm text-ok mb-1">
             Your withdrawal is ready to be proven!
           </p>
-          <p className="text-xs text-green-600">
+          <p className="text-xs text-ok">
             Proposal #{proposalId} is canonical and contains your withdrawal.
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Amount:</span>
+            <span className="text-dim">Amount:</span>
             <span>{formatEther(withdrawalData.amount)} ETH</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Recipient:</span>
+            <span className="text-dim">Recipient:</span>
             <span className="font-mono text-xs">{withdrawalData.to}</span>
           </div>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-err-soft border border-err-line rounded-lg">
+            <p className="text-sm text-err">{error}</p>
           </div>
         )}
 
         {pendingTxHash && (
           <div className={`p-3 border rounded-lg ${
             txStatus === 'confirmed' 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-blue-50 border-blue-200'
+              ? 'bg-ok-soft border-ok-line' 
+              : 'bg-accent-soft border-accent-line'
           }`}>
             <p className={`text-sm ${
-              txStatus === 'confirmed' ? 'text-green-800' : 'text-blue-800'
+              txStatus === 'confirmed' ? 'text-ok' : 'text-dim'
             }`}>
               {txStatus === 'pending' && '⏳ Proof transaction pending...'}
               {txStatus === 'confirmed' && '✅ Proof submitted successfully!'}
             </p>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-dim mt-1">
               Hash: {pendingTxHash.slice(0, 10)}...{pendingTxHash.slice(-8)}
             </p>
             {txStatus === 'pending' && (
-              <p className="text-xs text-blue-600 mt-1">Waiting for confirmation...</p>
+              <p className="text-xs text-link mt-1">Waiting for confirmation...</p>
             )}
           </div>
         )}
@@ -183,13 +183,13 @@ export function ProveStep({ withdrawalData, proposalId, onProven }: ProveStepPro
         <button
           onClick={handleProve}
           disabled={loading || !isOnL1}
-          className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-2 px-4 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:bg-line disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (txStatus === 'pending' ? 'Confirming...' : 'Building Proof...') : 'Prove Withdrawal'}
         </button>
 
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-600">
+        <div className="p-3 bg-inset rounded-lg">
+          <p className="text-xs text-dim">
             <strong>Note:</strong> This will submit a proof that your withdrawal exists in the 
             L2 state. After proving, you'll need to wait for a short delay before finalizing.
           </p>

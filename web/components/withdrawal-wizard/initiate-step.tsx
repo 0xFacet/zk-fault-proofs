@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { isAddress, type Hash, formatEther, parseEther, type TransactionReceipt } from 'viem'
 import { useChainId, useSwitchChain, useAccount, useWalletClient } from 'wagmi'
 import { getWithdrawalDataFromTx, type WithdrawalData } from '@/lib/withdrawal-actions'
-import { config, l2PublicClient, l1PublicClient } from '@/lib/config'
+import { config, l2PublicClient, l1PublicClient, TOKEN_SYMBOL, getL1Chain } from '@/lib/config'
 import { writeFacetContract } from '@0xfacet/sdk/viem'
 import { useCrossDomainMessage } from '@/hooks/useCrossDomainMessage'
 
@@ -196,17 +196,17 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Step 1: Initiate Withdrawal</h3>
+      <h3 className="text-lg font-semibold text-ink mb-4">Step 1: Initiate Withdrawal</h3>
       
       {/* Mode selector */}
-      <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+      <div className="flex mb-6 bg-inset rounded-lg p-1">
         <button
           type="button"
           onClick={() => setMode('new')}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
             mode === 'new' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-700 hover:text-gray-900'
+              ? 'bg-surface text-ink ' 
+              : 'text-dim hover:text-ink'
           }`}
         >
           New Withdrawal
@@ -216,8 +216,8 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
           onClick={() => setMode('existing')}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
             mode === 'existing' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-700 hover:text-gray-900'
+              ? 'bg-surface text-ink ' 
+              : 'text-dim hover:text-ink'
           }`}
         >
           Existing Transaction
@@ -227,20 +227,20 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
       {mode === 'new' && (
         <>
           {/* L2 Balance */}
-          <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-600">L2 Balance (Bluebird)</p>
-            <p className="text-lg font-semibold">{formatEther(l2Balance)} BBWETH</p>
+          <div className="mb-4 p-4 bg-accent-soft rounded-lg">
+            <p className="text-sm text-dim">L2 Balance (Facet)</p>
+            <p className="text-lg font-semibold">{formatEther(l2Balance)} {TOKEN_SYMBOL}</p>
           </div>
           
           {!isOnL1 && (
-            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-sm text-orange-800">
-                You need to be on Sepolia to initiate withdrawals. 
+            <div className="mb-4 p-4 bg-warn-soft border border-warn-line rounded-lg">
+              <p className="text-sm text-warn">
+                You need to be on {getL1Chain().name} to initiate withdrawals. 
                 <button
                   onClick={() => switchChain({ chainId: config.l1ChainId })}
-                  className="ml-2 text-orange-600 underline hover:text-orange-700"
+                  className="ml-2 text-warn underline hover:text-ink"
                 >
-                  Switch to Sepolia
+                  Switch to {getL1Chain().name}
                 </button>
               </p>
             </div>
@@ -252,7 +252,7 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === 'new' ? (
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="amount" className="block text-sm font-medium text-dim mb-2">
               Amount to Withdraw
             </label>
             <div className="relative">
@@ -264,18 +264,18 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.01"
-                className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 pr-12 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                 disabled={loading || !isOnL1}
               />
-              <span className="absolute right-3 top-2.5 text-gray-500">ETH</span>
+              <span className="absolute right-3 top-2.5 text-faint">ETH</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Enter the amount of ETH to withdraw from Bluebird L2
+            <p className="mt-1 text-xs text-faint">
+              Enter the amount of ETH to withdraw from Facet
             </p>
           </div>
         ) : (
           <div>
-            <label htmlFor="txHash" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="txHash" className="block text-sm font-medium text-dim mb-2">
               L2 Withdrawal Transaction Hash
             </label>
             <input
@@ -284,49 +284,49 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
               value={txHash}
               onChange={(e) => setTxHash(e.target.value)}
               placeholder="0x..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               disabled={loading || !isOnL2}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-faint">
               Enter the transaction hash from your L2 withdrawal
             </p>
           </div>
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-err-soft border border-err-line rounded-lg">
+            <p className="text-sm text-err">{error}</p>
           </div>
         )}
 
         {pendingTxHash && (
           <div className={`p-3 border rounded-lg ${
             txStatus === 'confirmed' 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-blue-50 border-blue-200'
+              ? 'bg-ok-soft border-ok-line' 
+              : 'bg-accent-soft border-accent-line'
           }`}>
             <p className={`text-sm ${
-              txStatus === 'confirmed' ? 'text-green-800' : 'text-blue-800'
+              txStatus === 'confirmed' ? 'text-ok' : 'text-dim'
             }`}>
               {txStatus === 'pending' && '⏳ Withdrawal transaction pending... Hash: '}
               {txStatus === 'confirmed' && '✅ Withdrawal initiated! Hash: '}
               {pendingTxHash.slice(0, 10)}...{pendingTxHash.slice(-8)}
             </p>
             {txStatus === 'pending' && (
-              <p className="text-xs text-blue-600 mt-1">Waiting for L1 confirmation...</p>
+              <p className="text-xs text-link mt-1">Waiting for L1 confirmation...</p>
             )}
             {txStatus === 'confirmed' && !isPolling && (
-              <p className="text-xs text-green-600 mt-1">L1 transaction confirmed. Waiting for L2 event...</p>
+              <p className="text-xs text-ok mt-1">L1 transaction confirmed. Waiting for L2 event...</p>
             )}
           </div>
         )}
 
         {isPolling && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium">
+          <div className="mt-4 p-4 bg-accent-soft border border-accent-line rounded-lg">
+            <p className="text-sm text-dim font-medium">
               Scanning L2 blocks for withdrawal event...
             </p>
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-xs text-link mt-1">
               {scanProgress.currentBlock ? (
                 <>Current block: #{scanProgress.currentBlock.toString()}</>
               ) : (
@@ -335,7 +335,7 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
               {' '}({scanProgress.elapsedSeconds}s elapsed)
             </p>
             {scanProgress.elapsedSeconds > 30 && (
-              <p className="text-xs text-blue-600 mt-2">
+              <p className="text-xs text-link mt-2">
                 This can take up to 5 minutes during high network activity.
               </p>
             )}
@@ -349,15 +349,15 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
             isPolling ||
             (mode === 'new' ? (!amount || !isOnL1) : !txHash)
           }
-          className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-2 px-4 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:bg-line disabled:cursor-not-allowed transition-colors"
         >
           {loading || isPolling ? 'Processing...' : mode === 'new' ? 'Initiate Withdrawal' : 'Continue'}
         </button>
       </form>
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">How it works</h4>
-        <p className="text-xs text-gray-600">
+      <div className="mt-6 p-4 bg-inset rounded-lg">
+        <h4 className="text-sm font-medium text-dim mb-2">How it works</h4>
+        <p className="text-xs text-dim">
           {mode === 'new' 
             ? 'Withdrawals on Facet are initiated through L1 transactions. The Facet SDK will create the appropriate L1 transaction to initiate your L2 withdrawal.'
             : 'If you already have a withdrawal transaction, enter its hash to track and complete the withdrawal process.'

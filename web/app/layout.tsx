@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { ClientProviders } from "./client-providers";
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "Facet Bluebird Bridge",
-  description: "Bridge ETH ↔️ Bluebird WETH",
+  title: "No Admin Ether",
+  description: "An ETH bridge to Facet with no admin",
 };
 
 export default function RootLayout({
@@ -27,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${plexSans.variable} ${plexMono.variable} antialiased`}
       >
         <ClientProviders>{children}</ClientProviders>
       </body>

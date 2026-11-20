@@ -3,6 +3,9 @@ import { mainnet, sepolia } from 'viem/chains'
 import type { Address } from 'viem'
 import { facetSepolia, facetMainnet } from './chains'
 
+export const BRIDGE_NAME = 'No Admin Ether'
+export const TOKEN_SYMBOL = 'naETH'
+
 // Configuration from environment variables
 // These MUST be set in Vercel or local .env file
 export const config = {

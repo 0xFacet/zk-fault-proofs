@@ -34,7 +34,7 @@ contract DeployBridges is Script, FacetScript {
         // Renounce ownership if requested
         console.log("Renouncing bridge ownership");
         l1Bridge.renounceOwnership();
-        
+
         // Output deployment summary
         console.log("\n========================================");
         console.log("Deployment Summary");
@@ -54,8 +54,8 @@ contract DeployBridges is Script, FacetScript {
     function deployL2BridgeViaFacet(address l1BridgeAddress) internal returns (address) {
         // L2Bridge constructor takes (string name, string symbol, address l1Bridge)
         bytes memory constructorArgs = abi.encode(
-            "Bluebird WETH",
-            "BBWETH",
+            "No Admin Ether",
+            "naETH",
             l1BridgeAddress
         );
         return deployContract("L2Bridge", type(L2Bridge).creationCode, constructorArgs);
