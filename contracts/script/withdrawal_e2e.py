@@ -142,6 +142,7 @@ def run(c, me):
     tip = int(float(PRIORITY_GWEI) * 1e9)
     # affordable while AMOUNT + GAS_TOTAL * (1.5 * base fee + tip) fits in the balance; otherwise wait for the base fee to drop
     max_base = ((l1_start - AMOUNT) // GAS_TOTAL - tip) * 2 // 3
+    if os.environ.get("MAX_BASE_GWEI"): max_base = min(max_base, int(float(os.environ["MAX_BASE_GWEI"]) * 1e9))
     print(f"burner {me}: {l1_start / 1e18:.6f} ETH on L1 ({'fork' if c.fork else 'mainnet'}); runs while the base fee is at most "
           f"{max_base / 1e9:.3f} gwei ({AMOUNT / 1e18} ETH of the balance comes back)")
     if max_base < 3 * 10 ** 8: sys.exit("not enough ETH on the burner even at a 0.3 gwei base fee")
