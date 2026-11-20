@@ -48,18 +48,56 @@ class Chain:
 
     def cast(self, *args):
         out = subprocess.run(["cast", *args], capture_output=True, text=True)
-        if out.returncode != 0: raise RuntimeError(f"cast {args[0]}: {out.stderr.strip()[-600:]}")
+        if out.returncode != 0:
+            raise RuntimeError(f"cast {args[0]} exit {out.returncode}: {(out.stderr.strip() or out.stdout.strip() or '(no output)')[-600:]}")
         return out.stdout.strip()
 
     def call(self, url, to, sig, *args):
         return self.cast("call", to, sig, *args, "--rpc-url", url)
 
+    def nonce(self, url, who, tag):
+        return int(self.rpc(url, "eth_getTransactionCount", [who, tag]), 16)
+
+    def mined_tx(self, url, frm, nonce, blocks=40):
+        """Receipt of the transaction from `frm` with `nonce` among the latest `blocks` blocks, or None."""
+        head = int(self.rpc(url, "eth_blockNumber", []), 16)
+        for n in range(head, head - blocks, -1):
+            for tx in self.rpc(url, "eth_getBlockByNumber", [hex(n), True])["transactions"]:
+                if tx["from"].lower() == frm.lower() and int(tx["nonce"], 16) == nonce:
+                    return self.rpc(url, "eth_getTransactionReceipt", [tx["hash"]])
+        return None
+
     def send(self, url, frm, to, sig_or_data, *args, value=0, gas=None):
-        cmd = ["send", "--rpc-url", url, "--json", "--value", str(value)]
+        # explicit fees (max fee = 2 x base fee + tip), so cast does not call eth_feeHistory, which load-balanced RPCs
+        # sometimes reject ("request beyond head block")
+        tip = int(float(PRIORITY_GWEI) * 1e9)
+        base = int(self.rpc(url, "eth_getBlockByNumber", ["latest", False])["baseFeePerGas"], 16)
+        cmd = ["send", "--rpc-url", url, "--json", "--value", str(value), "--gas-price", str(2 * base + tip), "--priority-gas-price", str(tip)]
         if gas: cmd += ["--gas-limit", str(gas)]
-        cmd += ["--unlocked", "--from", frm] if self.fork else ["--private-key", self.key, "--priority-gas-price", f"{PRIORITY_GWEI}gwei"]
+        cmd += ["--unlocked", "--from", frm] if self.fork else ["--private-key", self.key]
         cmd += (["--create", sig_or_data] if to is None else [to, sig_or_data]) + list(args)
-        rc = json.loads(self.cast(*cmd))
+        if self.fork:
+            rc = json.loads(self.cast(*cmd))
+        else:
+            # cast can fail without the transaction failing (RPC hiccup, receipt timeout): look at the nonce before resending
+            n0 = self.nonce(url, frm, "pending")
+            rc = None
+            for attempt in range(4):
+                try:
+                    rc = json.loads(self.cast(*cmd)); break
+                except RuntimeError as e:
+                    print(f"   {e}; checking the chain", flush=True)
+                for _ in range(25):                       # up to 10 minutes for a transaction already sent
+                    time.sleep(24)
+                    if self.nonce(url, frm, "latest") > n0:
+                        rc = self.mined_tx(url, frm, n0)
+                        if rc is None: raise RuntimeError(f"nonce {n0} was used but its transaction was not found")
+                        break
+                    if self.nonce(url, frm, "pending") == n0:
+                        break                             # not in the mempool: resending is safe
+                if rc: break
+                print("   not sent; sending again", flush=True)
+            if rc is None: raise RuntimeError("transaction not confirmed after 4 attempts")
         if rc["status"] not in ("0x1", 1, "1"): raise RuntimeError(f"transaction failed: {rc.get('transactionHash')}")
         if url == self.l1: self.l1_gas = getattr(self, "l1_gas", 0) + int(str(rc["gasUsed"]), 16 if str(rc["gasUsed"]).startswith("0x") else 10)
         return rc
@@ -114,6 +152,9 @@ def main():
     args = sys.argv[1:]
     fork = bool(args) and args[0] == "--fork"
     if fork: args = args[1:]
+    resume = None
+    if "--resume" in args:   # --resume <test L1Bridge> <test L2Bridge> <Facet block of the withdrawal>: continue at step 4
+        i = args.index("--resume"); resume = (args[i + 1], args[i + 2], int(args[i + 3])); args = args[:i] + args[i + 4:]
     if not args: sys.exit(__doc__)
     procs = []
     if fork:
@@ -125,23 +166,27 @@ def main():
                 try: c.rpc(url, "eth_blockNumber", []); break
                 except Exception: time.sleep(1)
         me = FORK_BURNER
-        for url in (c.l1, c.facet):
+        if resume:   # rehearse a mainnet resume: the test bridge's real owner on the L1 fork; Facet is only read
+            me = c.call(c.l1, resume[0], "owner()(address)")
+            c.facet = args[1] if len(args) > 1 else "https://mainnet.facet.org/"
+        for url in ([c.l1] if resume else [c.l1, c.facet]):
             c.rpc(url, "anvil_impersonateAccount", [me]); c.rpc(url, "anvil_setBalance", [me, hex(10 ** 18)])
     else:
         c = Chain(args[0], "https://mainnet.facet.org/", False)
         c.key = getpass.getpass("burner private key (used only for this test): ").strip()
         me = c.cast("wallet", "address", "--private-key", c.key)
     try:
-        run(c, me)
+        run(c, me, resume)
     finally:
         for p in procs: p.terminate(); p.wait()
 
 
-def run(c, me):
+def run(c, me, resume=None):
     l1_start = int(c.rpc(c.l1, "eth_getBalance", [me, "latest"]), 16)
     tip = int(float(PRIORITY_GWEI) * 1e9)
-    # affordable while AMOUNT + GAS_TOTAL * (1.5 * base fee + tip) fits in the balance; otherwise wait for the base fee to drop
-    max_base = ((l1_start - AMOUNT) // GAS_TOTAL - tip) * 2 // 3
+    gas_total, deposit = (3_500_000, 0) if resume else (GAS_TOTAL, AMOUNT)   # resuming: steps 4-6 only, the deposit is made
+    # affordable while deposit + gas_total * (1.5 * base fee + tip) fits in the balance; otherwise wait for the base fee to drop
+    max_base = ((l1_start - deposit) // gas_total - tip) * 2 // 3
     if os.environ.get("MAX_BASE_GWEI"): max_base = min(max_base, int(float(os.environ["MAX_BASE_GWEI"]) * 1e9))
     print(f"burner {me}: {l1_start / 1e18:.6f} ETH on L1 ({'fork' if c.fork else 'mainnet'}); runs while the base fee is at most "
           f"{max_base / 1e9:.3f} gwei ({AMOUNT / 1e18} ETH of the balance comes back)")
@@ -158,6 +203,29 @@ def run(c, me):
         if c.fork: return c.send(c.facet, me, to, data, gas=gas) if to else c.send(c.facet, me, None, data, gas=gas)
         return c.send(c.l1, me, INBOX, facet_payload(to, gas, data))
 
+    topic = c.cast("keccak", "MessagePassed(uint256,address,address,uint256,uint256,bytes,bytes32)")
+    if resume:
+        l1b, l2b, W = resume
+        assert c.call(c.l1, l1b, "owner()(address)").lower() == me.lower(), "the burner does not own this test bridge"
+        assert c.call(c.l1, l1b, "l2Bridge()(address)").lower() == l2b.lower()
+        logs = c.rpc(c.facet, "eth_getLogs", [{"address": MESSAGE_PASSER, "fromBlock": hex(W), "toBlock": hex(W),
+                                               "topics": [topic, None, "0x" + "00" * 12 + l2b[2:].lower()]}])
+        assert len(logs) == 1, f"{len(logs)} withdrawals from {l2b} in Facet block {W}"
+        log = logs[0]
+        print(f"resuming at step 4: test L1Bridge {l1b}, L2Bridge {l2b}, withdrawal in Facet block {W}")
+    else:
+        l1b, l2b, log = steps_1_to_3(c, me, facet_send, topic)
+        W = int(log["blockNumber"], 16)
+    wnonce = int(log["topics"][1], 16)
+    whash = "0x" + log["data"][2 + 64 * 3:2 + 64 * 4]
+    expect = c.cast("keccak", c.cast("abi-encode", "f(uint256,address,address,uint256,uint256,bytes)", str(wnonce), l2b, l1b, "0", "0",
+                                    c.cast("abi-encode", "f(address,uint256)", me, str(AMOUNT))))
+    assert whash == expect, f"withdrawal hash {whash} != {expect}"
+    print(f"3. withdrawal on Facet block {W}: nonce {wnonce}, hash {whash[:12]}…")
+    steps_4_to_6(c, me, l1b, W, wnonce, whash, l1_start)
+
+
+def steps_1_to_3(c, me, facet_send, topic):
     # 1. bridges
     l1b = c.send(c.l1, me, None, creation_code("L1Bridge") + c.cast("abi-encode", "f(address)", LIVE_ROLLUP)[2:])["contractAddress"]
     nonce = int(c.rpc(c.facet, "eth_getTransactionCount", [me, "latest"]), 16)
@@ -184,21 +252,17 @@ def run(c, me):
     # 3. withdrawal on Facet
     from_block = int(c.rpc(c.facet, "eth_blockNumber", []), 16)
     facet_send(l2b, 500_000, c.cast("calldata", "initiateWithdrawal(address,uint256)", me, str(AMOUNT)))
-    topic = c.cast("keccak", "MessagePassed(uint256,address,address,uint256,uint256,bytes,bytes32)")
     sender_topic = "0x" + "00" * 12 + l2b[2:].lower()
 
     def find():
         logs = c.rpc(c.facet, "eth_getLogs", [{"address": MESSAGE_PASSER, "fromBlock": hex(from_block), "toBlock": "latest", "topics": [topic, None, sender_topic]}])
         return logs[-1] if logs else None
     log = wait_for("the withdrawal on Facet", find)
-    W, wnonce = int(log["blockNumber"], 16), int(log["topics"][1], 16)
-    whash = "0x" + log["data"][2 + 64 * 3:2 + 64 * 4]
-    expect = c.cast("keccak", c.cast("abi-encode", "f(uint256,address,address,uint256,uint256,bytes)", str(wnonce), l2b, l1b, "0", "0",
-                                    c.cast("abi-encode", "f(address,uint256)", me, str(AMOUNT))))
-    assert whash == expect, f"withdrawal hash {whash} != {expect}"
     assert bal() == 0
-    print(f"3. withdrawal initiated on Facet block {W}: nonce {wnonce}, hash {whash[:12]}…")
+    return l1b, l2b, log
 
+
+def steps_4_to_6(c, me, l1b, W, wnonce, whash, l1_start):
     # 4. test Rollup from block W-1, pointed to by the test bridge
     def block(n): return c.rpc(c.facet, "eth_getBlockByNumber", [hex(n), False])
     def mp_root(n): return c.rpc(c.facet, "eth_getProof", [MESSAGE_PASSER, [], hex(n)])["storageHash"]
