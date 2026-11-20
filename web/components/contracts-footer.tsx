@@ -11,11 +11,6 @@ export function ContractsFooter() {
     { name: 'Bridge', address: config.l1BridgeAddress, href: `${l1Explorer}/address/${config.l1BridgeAddress}` },
     { name: `${TOKEN_SYMBOL} on ${l2Chain.name.replace(/ Mainnet$/, '')}`, address: config.l2BridgeAddress, href: `${l2Explorer}/address/${config.l2BridgeAddress}` },
   ]
-  const links = [
-    { name: 'Contract source', href: 'https://github.com/0xFacet/zk-fault-proofs/tree/facet/contracts/src' },
-    { name: 'Facet docs', href: 'https://docs.facet.org' },
-    { name: 'SP1', href: 'https://github.com/succinctlabs/sp1' },
-  ]
 
   return (
     <footer className="border-t border-line">
@@ -32,15 +27,12 @@ export function ContractsFooter() {
             </div>
           ))}
         </dl>
-        <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-          {links.map((l) => (
-            <li key={l.name}>
-              <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-dim hover:text-ink">
-                {l.name}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-faint">
+          <span>Facet Blockchain Technologies, LLC © 2026</span>
+          <a href="https://facet.org/terms.html" target="_blank" rel="noopener noreferrer" className="text-dim hover:text-ink">
+            Terms
+          </a>
+        </div>
       </div>
     </footer>
   )
