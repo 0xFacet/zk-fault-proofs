@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { isAddress, type Hash, formatEther, parseEther, type TransactionReceipt } from 'viem'
 import { useChainId, useSwitchChain, useAccount, useWalletClient } from 'wagmi'
 import { getWithdrawalDataFromTx, type WithdrawalData } from '@/lib/withdrawal-actions'
-import { config, l2PublicClient, l1PublicClient } from '@/lib/config'
+import { config, l2PublicClient, l1PublicClient, TOKEN_SYMBOL } from '@/lib/config'
 import { writeFacetContract } from '@0xfacet/sdk/viem'
 import { useCrossDomainMessage } from '@/hooks/useCrossDomainMessage'
 
@@ -228,8 +228,8 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
         <>
           {/* L2 Balance */}
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-600">L2 Balance (Bluebird)</p>
-            <p className="text-lg font-semibold">{formatEther(l2Balance)} BBWETH</p>
+            <p className="text-sm text-gray-600">L2 Balance (Facet)</p>
+            <p className="text-lg font-semibold">{formatEther(l2Balance)} {TOKEN_SYMBOL}</p>
           </div>
           
           {!isOnL1 && (
@@ -270,7 +270,7 @@ export function InitiateStep({ onNext }: InitiateStepProps) {
               <span className="absolute right-3 top-2.5 text-gray-500">ETH</span>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              Enter the amount of ETH to withdraw from Bluebird L2
+              Enter the amount of ETH to withdraw from Facet
             </p>
           </div>
         ) : (

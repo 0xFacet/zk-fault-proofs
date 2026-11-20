@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Facet Bluebird Bridge",
-  description: "Bridge ETH ↔️ Bluebird WETH",
+  title: "No Admin Ether",
+  description: "An ETH bridge to Facet with no admin",
 };
 
 export default function RootLayout({

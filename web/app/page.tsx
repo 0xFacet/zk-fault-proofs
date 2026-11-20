@@ -7,7 +7,7 @@ import { WithdrawalWizard } from '@/components/withdrawal-wizard'
 import { DepositWizard } from '@/components/deposit-wizard'
 import { ContractsFooter } from '@/components/contracts-footer'
 import { BridgeEducation } from '@/components/bridge-education'
-import { config, l1PublicClient } from '@/lib/config'
+import { config, l1PublicClient, BRIDGE_NAME, TOKEN_SYMBOL } from '@/lib/config'
 import { L1_BRIDGE_ABI } from '@/lib/contracts'
 import { Address } from 'viem'
 
@@ -41,7 +41,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Facet Bluebird Bridge</h1>
+              <h1 className="text-xl font-bold text-gray-900">{BRIDGE_NAME}</h1>
             </div>
             <div className="flex items-center gap-4">
               <NetworkStatus />
@@ -59,10 +59,10 @@ export default function Home() {
         {/* Bridge Interface */}
         <div className="text-center mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            Bridge ETH ↔️ Bluebird WETH
+            Bridge ETH ↔ {TOKEN_SYMBOL}
           </h3>
           <p className="text-gray-600">
-            Deposit to Bluebird and withdraw to L1 using ZK Fault Proofs
+            Deposit ETH on Ethereum to get {TOKEN_SYMBOL} on Facet. Withdrawals back to Ethereum take about 7 days.
           </p>
         </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { config, l1PublicClient } from '@/lib/config'
+import { config, l1PublicClient, BRIDGE_NAME, TOKEN_SYMBOL } from '@/lib/config'
 import { ROLLUP_ABI } from '@/lib/contracts'
 
 interface RollupParams {
@@ -55,12 +55,20 @@ export function BridgeEducation() {
   return (
     <div className="mb-12 text-center">
       <h2 className="text-4xl font-bold text-gray-900 mb-4">
-        Facet Bluebird Bridge
+        {BRIDGE_NAME}
       </h2>
-      <p className="text-xl text-gray-700 mb-2 max-w-3xl mx-auto">
-        A trustless WETH bridge for the Bluebird fork of the Facet rollup
+      <p className="text-xl text-gray-700 mb-6 max-w-3xl mx-auto">
+        An ETH bridge to Facet with no admin, no guardian and no training wheels
       </p>
-      
+
+      {/* Risk disclaimer: always shown */}
+      <div className="bg-red-50 border border-red-300 rounded-xl p-4 max-w-4xl mx-auto text-left mb-8">
+        <p className="text-sm text-red-900">
+          <strong>Use at your own risk.</strong> These contracts are unaudited and may have bugs. Nobody can pause,
+          upgrade or fix them, and nobody can recover funds if something goes wrong. Only deposit what you can afford to lose.
+        </p>
+      </div>
+
       {/* Key Features Cards */}
       <div className="grid md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -69,10 +77,10 @@ export function BridgeEducation() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2">Trustless*</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">No Admin</h3>
           <p className="text-sm text-gray-600">
-            Ownership renounced. No admin keys, no governance. 
-            Security depends only on ZK proof system and smart contract correctness.
+            Bridge ownership renounced. No admin keys, no governance.
+            Security depends on the Rollup&apos;s proof system and the contracts&apos; correctness.
           </p>
         </div>
         
@@ -141,9 +149,9 @@ export function BridgeEducation() {
             <div>
               <h4 className="font-semibold mb-1">Fork Binding</h4>
               <p className="mb-3">
-                <strong>"Bluebird" is the name of a specific Facet fork.</strong> The immutable parameters 
-                in the Rollup contract cryptographically define this fork's state transition rules. If Facet creates a new fork with different rules, 
-                those parameters won't match, and this bridge will remain locked to Bluebird's original rules forever.
+                <strong>This bridge is bound to one Rollup contract.</strong> The immutable parameters
+                in the Rollup contract define one set of Facet state transition rules. If Facet's rules change,
+                those parameters won't match, and this bridge will remain locked to the original rules forever.
               </p>
               
               <button
@@ -187,6 +195,9 @@ export function BridgeEducation() {
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>The SP1 ZK proof system must correctly verify state transitions</li>
                 <li>The bridge and Rollup.sol smart contract implementations must be bug-free</li>
+                <li>Someone must challenge any invalid state root within its 7-day challenge period (challenges require a bond)</li>
+                <li>Withdrawals need a state root posted to the Rollup. Its whitelisted proposers post them regularly; anyone else can after 14 days, or at any time with a ZK proof</li>
+                <li>The Rollup's owner chooses the whitelisted proposers. It cannot change the rules or move funds</li>
               </ul>
             </div>
             
@@ -194,7 +205,7 @@ export function BridgeEducation() {
               <h4 className="font-semibold mb-1">What This Means for You</h4>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>If there is a bug, no admin can step in to fix it and recover your funds</li>
-                <li>You may use the Bluebird fork of Facet forever. However, if you choose to use a different fork <b>you must withdraw from this bridge and redeposit into a bridge that supports the new fork.</b></li>
+                <li>You may hold {TOKEN_SYMBOL} under these rules forever. However, if you want to follow different rules <b>you must withdraw from this bridge and redeposit into a bridge that supports them.</b></li>
               </ul>
             </div>
           </div>

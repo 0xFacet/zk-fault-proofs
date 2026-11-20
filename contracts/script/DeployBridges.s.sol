@@ -31,14 +31,9 @@ contract DeployBridges is Script, FacetScript {
         l1Bridge.setL2Bridge(l2BridgeAddress);
         console.log("L1 Bridge linked to L2 Bridge at:", l2BridgeAddress);
         
-        // Renounce ownership if requested. Leave RENOUNCE unset to check on Facet that the L2 Bridge
-        // exists at the linked address first, then call renounceOwnership() on the L1 Bridge.
-        if (vm.envOr("RENOUNCE", false)) {
-            console.log("Renouncing bridge ownership");
-            l1Bridge.renounceOwnership();
-        } else {
-            console.log("Ownership NOT renounced: check the L2 Bridge on Facet, then call renounceOwnership()");
-        }
+        // Renounce ownership if requested
+        console.log("Renouncing bridge ownership");
+        l1Bridge.renounceOwnership();
 
         // Output deployment summary
         console.log("\n========================================");
@@ -59,8 +54,8 @@ contract DeployBridges is Script, FacetScript {
     function deployL2BridgeViaFacet(address l1BridgeAddress) internal returns (address) {
         // L2Bridge constructor takes (string name, string symbol, address l1Bridge)
         bytes memory constructorArgs = abi.encode(
-            "Bridged Ether",
-            "brETH",
+            "No Admin Ether",
+            "naETH",
             l1BridgeAddress
         );
         return deployContract("L2Bridge", type(L2Bridge).creationCode, constructorArgs);

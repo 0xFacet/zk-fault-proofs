@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useBalance, useWalletClient, useChainId, useSwitchChain } from 'wagmi'
 import { formatEther, parseEther } from 'viem'
-import { config, l1PublicClient, l2PublicClient } from '@/lib/config'
+import { config, l1PublicClient, l2PublicClient, TOKEN_SYMBOL } from '@/lib/config'
 import { L1_BRIDGE_ABI, L2_BRIDGE_ABI } from '@/lib/contracts'
 
 export function DepositWizard() {
@@ -106,9 +106,9 @@ export function DepositWizard() {
   if (!isConnected) {
     return (
       <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Deposit to Bluebird</h2>
+        <h2 className="text-2xl font-bold mb-4">Deposit to Facet</h2>
         <p className="text-gray-600 mb-6">
-          Connect your wallet to deposit ETH to Facet Bluebird.
+          Connect your wallet to deposit ETH to Facet.
         </p>
       </div>
     )
@@ -116,7 +116,7 @@ export function DepositWizard() {
   
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Deposit ETH to Bluebird</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Deposit ETH to Facet</h2>
       
       {/* Balance Display */}
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -129,7 +129,7 @@ export function DepositWizard() {
         <div className="p-4 bg-blue-50 rounded-lg">
           <p className="text-sm font-medium text-gray-700">L2 Balance</p>
           <p className="text-lg font-semibold text-gray-900">
-            {formatEther(l2Balance)} BBWETH
+            {formatEther(l2Balance)} {TOKEN_SYMBOL}
           </p>
           <p className="text-xs text-gray-600 mt-1">ERC20: {config.l2BridgeAddress.slice(0, 6)}...{config.l2BridgeAddress.slice(-4)}</p>
         </div>
@@ -212,16 +212,16 @@ export function DepositWizard() {
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-sm font-medium text-gray-800 mb-2">How Deposits Work</h3>
           <p className="text-xs text-gray-700">
-            When you deposit ETH, the L1 bridge contract locks your ETH and sends a message to Bluebird L2 
-            to mint equivalent BBWETH tokens to your account. This process is automatic and trustless.
+            When you deposit ETH, the L1 bridge contract locks your ETH and sends a message to Facet
+            to mint the same amount of {TOKEN_SYMBOL} to your account, usually within a few minutes.
           </p>
         </div>
-        
-        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-          <h3 className="text-sm font-medium text-green-900 mb-2">Security Guarantee</h3>
-          <p className="text-xs text-green-800">
-            With ownership renounced, your deposited ETH is locked permanently in the bridge contract. 
-            It can only be released through valid ZK-proven withdrawals—no admin can access or move these funds.
+
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <h3 className="text-sm font-medium text-amber-900 mb-2">No Admin</h3>
+          <p className="text-xs text-amber-800">
+            The bridge has no owner. Your ETH can only leave the bridge through a withdrawal proven against a
+            Rollup state root. Nobody can move it otherwise, and nobody can rescue it if the contracts have a bug.
           </p>
         </div>
       </div>

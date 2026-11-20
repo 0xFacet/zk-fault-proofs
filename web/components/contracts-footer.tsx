@@ -1,4 +1,4 @@
-import { config } from '@/lib/config'
+import { config, BRIDGE_NAME, TOKEN_SYMBOL } from '@/lib/config'
 import { getL1Chain, getL2Chain } from '@/lib/config'
 
 export function ContractsFooter() {
@@ -42,7 +42,7 @@ export function ContractsFooter() {
                 </a>
               </li>
               <li>
-                <div className="text-sm text-gray-600">L2 Bridge (BBWETH)</div>
+                <div className="text-sm text-gray-600">L2 Bridge ({TOKEN_SYMBOL})</div>
                 <a 
                   href={`${l2Explorer}/address/${config.l2BridgeAddress}`}
                   target="_blank"
@@ -66,8 +66,8 @@ export function ContractsFooter() {
                 <div className="text-sm text-gray-900">{l1Chain.name}</div>
               </li>
               <li>
-                <div className="text-sm text-gray-600">L2 Network (Fork Name)</div>
-                <div className="text-sm text-gray-900">Bluebird ({l2Chain.name})</div>
+                <div className="text-sm text-gray-600">L2 Network</div>
+                <div className="text-sm text-gray-900">{l2Chain.name}</div>
               </li>
               <li>
                 <div className="text-sm text-gray-600">Chain ID</div>
@@ -121,7 +121,7 @@ export function ContractsFooter() {
 
         <div className="mt-8 pt-8 border-t border-gray-300">
           <p className="text-sm text-gray-500 text-center">
-            Facet Bridge - ZK Fault Proofs powered by SP1
+            {BRIDGE_NAME} · ZK fault proofs powered by SP1
           </p>
         </div>
       </div>
