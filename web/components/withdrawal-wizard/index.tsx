@@ -7,7 +7,6 @@ import { WaitProposalStep } from './wait-proposal-step'
 import { ProveStep } from './prove-step'
 import { FinalizeStep } from './finalize-step'
 import { useLatestWithdrawal } from '@/hooks/useLatestWithdrawal'
-import { TOKEN_SYMBOL } from '@/lib/config'
 import { findCanonicalProposal } from '@/lib/withdrawal-actions'
 import type { WithdrawalData } from '@/lib/withdrawal-actions'
 import type { OutputRootProof } from '@/lib/actions/types'
@@ -86,9 +85,9 @@ export function WithdrawalWizard() {
 
   if (!isConnected) {
     return (
-      <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-sm">
+      <div className="p-5 sm:p-7 bg-surface rounded-xl border border-line ">
         <h2 className="text-2xl font-bold mb-4">Withdraw from Facet</h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-dim mb-6">
           Connect your wallet to start the withdrawal process.
         </p>
       </div>
@@ -96,18 +95,18 @@ export function WithdrawalWizard() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-sm">
+    <div className="p-5 sm:p-7 bg-surface rounded-xl border border-line ">
       <h2 className="text-2xl font-bold mb-6">Withdraw from Facet</h2>
       
       {/* Progress indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <StepIndicator label="Initiate" active={state.step === 'initiate'} completed={state.step !== 'initiate'} />
-          <div className={`flex-1 h-1 mx-2 ${state.step !== 'initiate' ? 'bg-blue-500' : 'bg-gray-200'}`} />
+          <div className={`flex-1 h-1 mx-2 ${state.step !== 'initiate' ? 'bg-accent' : 'bg-line'}`} />
           <StepIndicator label="Wait for Proposal" active={state.step === 'wait-proposal'} completed={['prove', 'finalize'].includes(state.step)} />
-          <div className={`flex-1 h-1 mx-2 ${['prove', 'finalize'].includes(state.step) ? 'bg-blue-500' : 'bg-gray-200'}`} />
+          <div className={`flex-1 h-1 mx-2 ${['prove', 'finalize'].includes(state.step) ? 'bg-accent' : 'bg-line'}`} />
           <StepIndicator label="Prove" active={state.step === 'prove'} completed={state.step === 'finalize'} />
-          <div className={`flex-1 h-1 mx-2 ${state.step === 'finalize' ? 'bg-blue-500' : 'bg-gray-200'}`} />
+          <div className={`flex-1 h-1 mx-2 ${state.step === 'finalize' ? 'bg-accent' : 'bg-line'}`} />
           <StepIndicator label="Finalize" active={state.step === 'finalize'} completed={state.isFinalized || false} />
         </div>
       </div>
@@ -155,30 +154,6 @@ export function WithdrawalWizard() {
           />
         )}
       </div>
-
-      {/* Educational Information */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">How Withdrawals Work</h3>
-        <div className="space-y-2 text-xs text-blue-800">
-          <p>
-            Withdrawals are checked against Facet state roots posted to the Rollup contract on Ethereum. A state root
-            becomes final after a 7-day challenge period, or immediately with a ZK proof.
-          </p>
-          <div className="mt-2">
-            <strong>The Process:</strong>
-            <ol className="list-decimal list-inside ml-2 mt-1 space-y-1">
-              <li>Initiate withdrawal on Facet (burns your {TOKEN_SYMBOL})</li>
-              <li>Wait for a state root that includes it to be posted and become final (about 7 days)</li>
-              <li>Prove your withdrawal against that state root (a Merkle proof, built in your browser)</li>
-              <li>Finalize to receive your ETH on Ethereum</li>
-            </ol>
-          </div>
-          <p className="mt-2 p-2 bg-blue-100 rounded">
-            <strong>Note:</strong> Because the bridge has no owner, no one can pause withdrawals,
-            blacklist addresses or state roots, or interfere with the process.
-          </p>
-        </div>
-      </div>
     </div>
   )
 }
@@ -187,10 +162,10 @@ function StepIndicator({ label, active, completed }: { label: string; active: bo
   return (
     <div className="flex flex-col items-center">
       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-        ${completed ? 'bg-blue-500 text-white' : active ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-500' : 'bg-gray-200 text-gray-500'}`}>
+        ${completed ? 'bg-accent text-white' : active ? 'bg-accent-soft text-link ring-2 ring-accent' : 'bg-line text-faint'}`}>
         {completed ? '✓' : label.charAt(0)}
       </div>
-      <span className={`text-xs mt-1 text-center max-w-[60px] sm:max-w-none ${active ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+      <span className={`text-xs mt-1 text-center max-w-[60px] sm:max-w-none ${active ? 'text-link font-medium' : 'text-faint'}`}>
         {label}
       </span>
     </div>

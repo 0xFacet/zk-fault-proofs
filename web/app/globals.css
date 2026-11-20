@@ -1,49 +1,81 @@
 @import "tailwindcss";
 
+/* One dark theme. Components use these semantic colors (bg-surface, text-ink, ...) rather than Tailwind's palette. */
 :root {
-  --background: #ffffff;
-  --foreground: #111827; /* gray-900 */
-  
-  /* Custom color variables for better defaults */
-  --text-primary: #111827; /* gray-900 */
-  --text-secondary: #374151; /* gray-700 */
-  --text-tertiary: #6b7280; /* gray-500 */
-  --text-muted: #9ca3af; /* gray-400 */
-  
-  --border-default: #e5e7eb; /* gray-200 */
-  --bg-subtle: #f9fafb; /* gray-50 */
-  --bg-muted: #f3f4f6; /* gray-100 */
+  color-scheme: dark;
+  --canvas: #16191f;        /* page */
+  --surface: #1d2028;       /* the bridge panel */
+  --inset: #13161b;         /* wells inside the panel */
+  --line: #2b303a;          /* borders, dividers, disabled */
+  --ink: #e8eaee;           /* primary text */
+  --dim: #a9afba;           /* secondary text */
+  --faint: #7e8592;         /* tertiary text */
+  --accent: #5366cb;        /* primary buttons */
+  --accent-hover: #6075d8;
+  --link: #a3b1f5;
+  --accent-soft: #1d2233;
+  --accent-line: #343d63;
+  --ok: #7cc79b;
+  --ok-soft: #172720;
+  --ok-line: #2a4536;
+  --err: #f08a8a;
+  --err-soft: #2a1a1d;
+  --err-line: #4d2b30;
+  --warn: #e3b866;
+  --warn-soft: #2a2418;
+  --warn-line: #4d4128;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-inset: var(--inset);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-dim: var(--dim);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-link: var(--link);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-line: var(--ok-line);
+  --color-err: var(--err);
+  --color-err-soft: var(--err-soft);
+  --color-err-line: var(--err-line);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-line: var(--warn-line);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
-/* Force light mode for now - remove dark mode */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Force RainbowKit to use light mode */
-[data-rk] {
-  color-scheme: light !important;
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
 }
 
-/* Override RainbowKit dark mode styles */
-[data-rk][data-theme="dark"] {
-  --rk-colors-modalBackground: #ffffff !important;
-  --rk-colors-modalBorder: #e5e7eb !important;
-  --rk-colors-modalText: #111827 !important;
-  --rk-colors-modalTextSecondary: #6b7280 !important;
+input[type="number"] {
+  background: var(--inset);
+  color: var(--ink);
 }
 
-/* Better default text colors */
-.text-default { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
-.text-muted { color: var(--text-muted); }
+/* Older helper classes still used by a few components */
+.text-default, .text-primary { color: var(--ink); }
+.text-secondary { color: var(--dim); }
+.text-tertiary, .text-muted { color: var(--faint); }
+.bg-subtle, .bg-muted { background: var(--inset); }
+.border-default { border-color: var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation-duration: 0.01ms !important; }
+}

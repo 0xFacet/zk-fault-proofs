@@ -96,25 +96,25 @@ export function FinalizeStep({ withdrawalData, provenAt, onFinalized }: Finalize
     <div>
       {isFinalized ? (
         <>
-          <h3 className="text-lg font-semibold mb-4 text-green-600">✅ Withdrawal Complete!</h3>
+          <h3 className="text-lg font-semibold mb-4 text-ok">✅ Withdrawal Complete!</h3>
           
           <div className="space-y-4">
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-800 mb-2">
+            <div className="p-4 bg-ok-soft border border-ok-line rounded-lg">
+              <p className="text-sm text-ok mb-2">
                 Your withdrawal has been successfully finalized!
               </p>
-              <p className="text-xs text-green-600">
+              <p className="text-xs text-ok">
                 The funds have been transferred to your L1 address.
               </p>
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Amount:</span>
+                <span className="text-dim">Amount:</span>
                 <span>{formatEther(withdrawalData.amount)} ETH</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Recipient:</span>
+                <span className="text-dim">Recipient:</span>
                 <span className="font-mono text-xs">{withdrawalData.to}</span>
               </div>
             </div>
@@ -124,7 +124,7 @@ export function FinalizeStep({ withdrawalData, provenAt, onFinalized }: Finalize
                 onFinalized()
                 window.location.reload()
               }}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="w-full py-2 px-4 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
             >
               Start New Withdrawal
             </button> */}
@@ -135,12 +135,12 @@ export function FinalizeStep({ withdrawalData, provenAt, onFinalized }: Finalize
           <h3 className="text-lg font-semibold mb-4">Step 4: Finalize Withdrawal</h3>
           
           {!isOnL1 && (
-            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-sm text-orange-800">
+            <div className="mb-4 p-4 bg-warn-soft border border-warn-line rounded-lg">
+              <p className="text-sm text-warn">
                 You need to be on L1 to finalize the withdrawal. 
                 <button
                   onClick={() => switchChain({ chainId: config.l1ChainId })}
-                  className="ml-2 text-orange-600 underline hover:text-orange-700"
+                  className="ml-2 text-warn underline hover:text-ink"
                 >
                   Switch to L1
                 </button>
@@ -150,20 +150,20 @@ export function FinalizeStep({ withdrawalData, provenAt, onFinalized }: Finalize
 
           <div className="space-y-4">
             {!canFinalize ? (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800 mb-1">
+              <div className="p-4 bg-warn-soft border border-warn-line rounded-lg">
+                <p className="text-sm text-warn mb-1">
                   Waiting for security delay...
                 </p>
-                <p className="text-2xl font-bold text-yellow-900">
+                <p className="text-2xl font-bold text-warn">
                   {formatTime(timeRemaining)}
                 </p>
-                <p className="text-xs text-yellow-600 mt-1">
+                <p className="text-xs text-warn mt-1">
                   This delay ensures the security of the withdrawal process.
                 </p>
               </div>
             ) : (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800">
+              <div className="p-4 bg-ok-soft border border-ok-line rounded-lg">
+                <p className="text-sm text-ok">
                   Your withdrawal is ready to be finalized!
                 </p>
               </div>
@@ -171,31 +171,31 @@ export function FinalizeStep({ withdrawalData, provenAt, onFinalized }: Finalize
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Amount:</span>
+                <span className="text-dim">Amount:</span>
                 <span>{formatEther(withdrawalData.amount)} ETH</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Recipient:</span>
+                <span className="text-dim">Recipient:</span>
                 <span className="font-mono text-xs">{withdrawalData.to}</span>
               </div>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="p-3 bg-err-soft border border-err-line rounded-lg">
+                <p className="text-sm text-err">{error}</p>
               </div>
             )}
 
             <button
               onClick={handleFinalize}
               disabled={loading || !canFinalize || !isOnL1}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-2 px-4 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:bg-line disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Finalizing...' : 'Finalize Withdrawal'}
             </button>
 
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600">
+            <div className="p-3 bg-inset rounded-lg">
+              <p className="text-xs text-dim">
                 <strong>Final step!</strong> This will transfer the funds to your L1 address. 
                 The transaction will complete the withdrawal process.
               </p>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useBalance, useWalletClient, useChainId, useSwitchChain } from 'wagmi'
 import { formatEther, parseEther } from 'viem'
-import { config, l1PublicClient, l2PublicClient, TOKEN_SYMBOL } from '@/lib/config'
+import { config, l1PublicClient, l2PublicClient, TOKEN_SYMBOL, getL1Chain } from '@/lib/config'
 import { L1_BRIDGE_ABI, L2_BRIDGE_ABI } from '@/lib/contracts'
 
 export function DepositWizard() {
@@ -105,9 +105,9 @@ export function DepositWizard() {
   
   if (!isConnected) {
     return (
-      <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-sm">
+      <div className="p-5 sm:p-7 bg-surface rounded-xl border border-line ">
         <h2 className="text-2xl font-bold mb-4">Deposit to Facet</h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-dim mb-6">
           Connect your wallet to deposit ETH to Facet.
         </p>
       </div>
@@ -115,35 +115,35 @@ export function DepositWizard() {
   }
   
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Deposit ETH to Facet</h2>
+    <div className="p-5 sm:p-7 bg-surface rounded-xl border border-line ">
+      <h2 className="text-2xl font-bold text-ink mb-6">Deposit ETH to Facet</h2>
       
       {/* Balance Display */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700">L1 Balance</p>
-          <p className="text-lg font-semibold text-gray-900">
+        <div className="p-4 bg-inset rounded-lg">
+          <p className="text-sm font-medium text-dim">L1 Balance</p>
+          <p className="text-lg font-semibold text-ink">
             {l1Balance ? formatEther(l1Balance.value) : '0'} ETH
           </p>
         </div>
-        <div className="p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700">L2 Balance</p>
-          <p className="text-lg font-semibold text-gray-900">
+        <div className="p-4 bg-accent-soft rounded-lg">
+          <p className="text-sm font-medium text-dim">L2 Balance</p>
+          <p className="text-lg font-semibold text-ink">
             {formatEther(l2Balance)} {TOKEN_SYMBOL}
           </p>
-          <p className="text-xs text-gray-600 mt-1">ERC20: {config.l2BridgeAddress.slice(0, 6)}...{config.l2BridgeAddress.slice(-4)}</p>
+          <p className="text-xs text-dim mt-1">ERC20: {config.l2BridgeAddress.slice(0, 6)}...{config.l2BridgeAddress.slice(-4)}</p>
         </div>
       </div>
       
       {!isOnL1 && (
-        <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-          <p className="text-sm text-orange-800">
-            You need to be on Sepolia to deposit. 
+        <div className="mb-4 p-4 bg-warn-soft border border-warn-line rounded-lg">
+          <p className="text-sm text-warn">
+            You need to be on {getL1Chain().name} to deposit. 
             <button
               onClick={() => switchChain({ chainId: config.l1ChainId })}
-              className="ml-2 text-orange-600 underline hover:text-orange-700"
+              className="ml-2 text-warn underline hover:text-ink"
             >
-              Switch to Sepolia
+              Switch to {getL1Chain().name}
             </button>
           </p>
         </div>
@@ -152,7 +152,7 @@ export function DepositWizard() {
       {/* Deposit Form */}
       <div className="space-y-4">
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-800 mb-2">
+          <label htmlFor="amount" className="block text-sm font-medium text-ink mb-2">
             Amount to Deposit
           </label>
           <div className="relative">
@@ -164,66 +164,54 @@ export function DepositWizard() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.01"
-              className="w-full text-gray-800 px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-ink px-3 py-2 pr-12 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               disabled={loading || !isOnL1}
             />
-            <span className="absolute right-3 top-2.5 text-gray-600 font-medium">ETH</span>
+            <span className="absolute right-3 top-2.5 text-dim font-medium">ETH</span>
           </div>
         </div>
         
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-err-soft border border-err-line rounded-lg">
+            <p className="text-sm text-err">{error}</p>
           </div>
         )}
         
         {txHash && (
           <div className={`p-3 border rounded-lg ${
             txStatus === 'confirmed' 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-blue-50 border-blue-200'
+              ? 'bg-ok-soft border-ok-line' 
+              : 'bg-accent-soft border-accent-line'
           }`}>
             <p className={`text-sm ${
-              txStatus === 'confirmed' ? 'text-green-800' : 'text-blue-800'
+              txStatus === 'confirmed' ? 'text-ok' : 'text-dim'
             }`}>
               {txStatus === 'pending' && '⏳ Transaction pending... Hash: '}
               {txStatus === 'confirmed' && '✅ Transaction confirmed! Hash: '}
               {txHash.slice(0, 10)}...{txHash.slice(-8)}
             </p>
             {txStatus === 'pending' && (
-              <p className="text-xs text-blue-600 mt-1">Waiting for confirmation...</p>
+              <p className="text-xs text-link mt-1">Waiting for confirmation...</p>
             )}
             {txStatus === 'confirmed' && (
-              <p className="text-xs text-green-600 mt-1">Your L2 balance will update shortly.</p>
+              <p className="text-xs text-ok mt-1">Your L2 balance will update shortly.</p>
             )}
           </div>
         )}
         
+        <p className="p-3 bg-warn-soft border border-warn-line rounded-lg text-xs text-warn">
+          <strong>Use at your own risk.</strong> The contracts are unaudited, and they or the ZK proof system they rely
+          on may have bugs. Nothing in this deployment can be upgraded or swapped out, so a bug can&apos;t be fixed here
+          and lost funds can&apos;t be recovered. Only deposit what you can afford to lose.
+        </p>
+
         <button
           onClick={handleDeposit}
           disabled={loading || !amount || !isOnL1}
-          className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-2 px-4 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:bg-line disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? 'Depositing...' : 'Deposit to L2'}
+          {loading ? 'Depositing...' : `Deposit to Facet`}
         </button>
-      </div>
-      
-      <div className="mt-6 space-y-4">
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-800 mb-2">How Deposits Work</h3>
-          <p className="text-xs text-gray-700">
-            When you deposit ETH, the L1 bridge contract locks your ETH and sends a message to Facet
-            to mint the same amount of {TOKEN_SYMBOL} to your account, usually within a few minutes.
-          </p>
-        </div>
-
-        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-          <h3 className="text-sm font-medium text-amber-900 mb-2">No Admin</h3>
-          <p className="text-xs text-amber-800">
-            The bridge has no owner. Your ETH can only leave the bridge through a withdrawal proven against a
-            Rollup state root. Nobody can move it otherwise, and nobody can rescue it if the contracts have a bug.
-          </p>
-        </div>
       </div>
     </div>
   )
